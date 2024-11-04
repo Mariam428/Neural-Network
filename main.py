@@ -23,11 +23,81 @@ df[['body_mass', 'beak_length', 'beak_depth', 'fin_length']] = scaler.fit_transf
 )
 
 #print(df)
+class Adaline:
+    def __init__(self, eta=0.01, epochs=1000, mse_threshold=0.01, add_bias=True):
+        self.eta = eta
+        self.epochs = epochs
+        self.mse_threshold = mse_threshold
+        self.add_bias = add_bias
+        self.weights = None
+
+    def fit(self, X, y):
+        if self.add_bias:
+            X = np.c_[np.ones(X.shape[0]), X]  # Adding bias as the first column
+        self.weights = np.zeros(X.shape[1])
+
+        for epoch in range(self.epochs):
+            output = self.net_input(X)
+            errors = y - output
+            self.weights += self.eta * X.T.dot(errors)
+            mse = (errors ** 2).mean()
+            print(f"Epoch: {epoch + 1}, MSE: {mse}")
+            if mse < self.mse_threshold:
+                print("Training stopped due to MSE threshold.")
+                break
+
+    def net_input(self, X):
+        return np.dot(X, self.weights)
+
+    def predict(self, X):
+        if self.add_bias:
+            X = np.c_[np.ones(X.shape[0]), X]
+        return np.where(self.net_input(X) >= 0.0, 1, -1)
+
+def train_adaline():
+    # Retrieve values from GUI entries
+    eta = float(eta_entry.get())
+    epochs = int(epochs_entry.get())
+    mse_threshold = float(mse_threshold_entry.get())
+    add_bias = bias_var.get()
+
+    # Select features and filter the dataset based on selected classes
+    feature1 = feature1_var.get()
+    feature2 = feature2_var.get()
+    class1 = classe1_var.get()
+    class2 = classe2_var.get()
+
+    # Filter the dataset to include only selected classes
+    filtered_df = df[df['bird category'].isin([category_mapping[class1], category_mapping[class2]])]
+    X = filtered_df[[feature1, feature2]].values
+    y = np.where(filtered_df['bird category'] == category_mapping[class1], -1, 1)  # Binary labels for Adaline
+
+    # Initialize and train Adaline
+    adaline = Adaline(eta=eta, epochs=epochs, mse_threshold=mse_threshold, add_bias=add_bias)
+    adaline.fit(X, y)
+
+    messagebox.showinfo("Training Completed", "Adaline training is complete.")
 
 def call_perceptron_train():#this function only gets input from gui, maps them and call perceptron algo
+    print("in call perceptron train")
     class_mapping = {'A': 0, 'B': 1, 'C': 2}
-    c=[0,1,2]
-    perceptron_algo_train(10, 0.1, 0, df, c, 0, 1)
+    c1=classe1_entry.get()
+    c2=classe2_entry.get()
+    c=[0]*2
+    c[0]= class_mapping[c1]
+    c[1]=class_mapping[c2]
+
+    #print(c)
+    eta = eta_entry.get()
+    eta = float(eta)
+    epochs = epochs_entry.get()
+    epochs=int(epochs)
+    add_bias = bias_var.get()
+    # Select features and filter the dataset based on selected classes
+    feature1 = feature1_var.get()
+    feature2 = feature2_var.get()
+    perceptron_algo_train(epochs, eta, int(add_bias), df, c, feature1, feature2)
+    return
 
 
 
@@ -35,7 +105,7 @@ def call_perceptron_train():#this function only gets input from gui, maps them a
 def perceptron_algo_train(epochs,eta,bias,df,classes,f1_index,f2_index): #returns final weights and test df
     print("in perceptron_algo")
     #prepare the dataframe to work on
-    new_df = df[df["bird category"] != classes[2]].copy() #drop unwanted class
+    new_df = df[(df["bird category"] == classes[0]) | (df["bird category"] == classes[1])].copy()
     new_df = new_df.iloc[:, [int(f1_index), int(f2_index), -1]].copy() #select two features
     #train test split
     class1_df = new_df[new_df["bird category"] ==  int(classes[0])]
@@ -67,7 +137,13 @@ def perceptron_algo_train(epochs,eta,bias,df,classes,f1_index,f2_index): #return
 
     print(f"final weights are: {weights[0]} and {weights[1]}")
     return  weights , test_df
-
+def on_train_button_click():
+    print("button clicked")
+    if algorithm_var.get() == "Perceptron":
+        call_perceptron_train()
+    else:
+        print("Adaline training started")
+        train_adaline()
 
 
 
@@ -105,12 +181,13 @@ eta_entry.grid(row=4, column=1, padx=10, pady=5)
 # Number of epochs
 ttk.Label(root, text="Number of Epochs (m):").grid(row=5, column=0, padx=5, pady=5, sticky="e")
 epochs_entry = ttk.Entry(root)
-#epochs_entry.insert(0,"10")
+epochs_entry.insert(0,"10")
 epochs_entry.grid(row=5, column=1, padx=10, pady=5)
 
 # MSE threshold
 ttk.Label(root, text="MSE Threshold:").grid(row=6, column=0, padx=5, pady=5, sticky="e")
 mse_threshold_entry = ttk.Entry(root)
+mse_threshold_entry.insert(0,"0.0")
 mse_threshold_entry.grid(row=6, column=1, padx=10, pady=5)
 
 # bias checkbox
@@ -127,11 +204,11 @@ perceptron_rb.grid(row=8, column=1, padx=5, pady=5, sticky="w")
 adaline_rb.grid(row=8, column=2, padx=5, pady=5, sticky="w")
 
 # Train Test buttons
-button1 = ttk.Button(root, text="Train")
+button1 = ttk.Button(root, text="Train",command=on_train_button_click)
 button1.grid(row=11, column=1, padx=10, pady=5, sticky="e")
 
 button2 = ttk.Button(root, text="Test")
 button2.grid(row=11, column=2, padx=10, pady=5, sticky="w")
-call_perceptron_train()
+
 # Start the main event loop
 root.mainloop()
