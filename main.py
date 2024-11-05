@@ -7,8 +7,11 @@ from tkinter import messagebox
 
 df = pd.read_csv('birds.csv')
 
+mode_gender = df['gender'][df['gender'] != 'NA'].mode()[0]
+df['gender'] = df['gender'].replace('NA', mode_gender)
+
 # change categorical values to numerical
-gender_mapping = {'male': 0, 'female': 1, 'NA': 2}
+gender_mapping = {'male': 0, 'female': 1}
 df['gender'] = df['gender'].map(gender_mapping)
 
 category_mapping = {'A': 0, 'B': 1, 'C': 2}
@@ -22,7 +25,7 @@ df[['body_mass', 'beak_length', 'beak_depth', 'fin_length']] = scaler.fit_transf
     df[['body_mass', 'beak_length', 'beak_depth', 'fin_length']]
 )
 
-#print(df)
+print(df)
 class Adaline:
     def __init__(self, eta=0.01, epochs=1000, mse_threshold=0.01, add_bias=True):
         self.eta = eta
