@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from tkinter import messagebox
+import matplotlib.pyplot as plt
 
 # Load the dataset
 df = pd.read_csv('birds.csv')
@@ -74,6 +75,9 @@ def train_adaline(eta, epochs, mse_threshold, add_bias, feature1, feature2, clas
 
     messagebox.showinfo("Training Completed", "Adaline training is complete.")
 
+    # Plot the decision boundary
+   # plot_decision_boundary(adaline, X_train, y_train, title="Adaline Decision Boundary")
+
 def call_perceptron_train(eta, epochs, add_bias, feature1, feature2, class1, class2):
     class_mapping = {'A': 0, 'B': 1, 'C': 2}
     c = [class_mapping[class1], class_mapping[class2]]
@@ -85,7 +89,15 @@ def call_perceptron_train(eta, epochs, add_bias, feature1, feature2, class1, cla
     X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.4, random_state=42)
     X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
 
-    perceptron_algo_train(epochs, eta, int(add_bias), X_train, y_train)
+    weights = perceptron_algo_train(epochs, eta, int(add_bias), X_train, y_train)
+
+    # class Perceptron:
+    #     def __init__(self, weights, add_bias):
+    #         self.weights = weights
+    #         self.add_bias = add_bias
+    #
+    # perceptron = Perceptron(weights, add_bias)
+    # plot_decision_boundary(perceptron, X_train, y_train, title="Perceptron Decision Boundary")
 
 def perceptron_algo_train(epochs, eta, bias, X_train, y_train):
     weights = np.random.uniform(-0.5, 0.5, 2)
@@ -101,3 +113,34 @@ def perceptron_algo_train(epochs, eta, bias, X_train, y_train):
                 weights[1] += eta * loss * entry[1]
 
     print(f"Final weights for Perceptron are: {weights[0]} and {weights[1]}")
+    # return weights
+
+# Visualization
+def plot_decision_boundary(model, X, y, title="Decision Boundary"):
+    # Scatter the points with different colors for each class
+    plt.scatter(X[y == -1][:, 0], X[y == -1][:, 1], color='red', marker='o', label='Class -1')
+    plt.scatter(X[y == 1][:, 0], X[y == 1][:, 1], color='blue', marker='x', label='Class 1')
+
+    # Plot the decision boundary
+    x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+    y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+    xx = np.linspace(x_min, x_max, 100)
+
+    # Calculate the slope and intercept for the decision boundary line
+    if model.add_bias:
+        intercept = -model.weights[0] / model.weights[2]  # bias weight
+        slope = -model.weights[1] / model.weights[2]  # feature weight
+    else:
+        intercept = 0
+        slope = -model.weights[0] / model.weights[1]
+
+    yy = slope * xx + intercept
+    plt.plot(xx, yy, "k-", lw=2, label="Decision Boundary")
+
+    # Customize plot
+    plt.xlabel("Feature 1")
+    plt.ylabel("Feature 2")
+    plt.title(title)
+    plt.legend()
+    plt.show()
+
