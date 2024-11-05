@@ -102,11 +102,13 @@ def call_perceptron_train():#this function only gets input from gui, maps them a
 
 
 
-def perceptron_algo_train(epochs,eta,bias,df,classes,f1_index,f2_index): #returns final weights and test df
+def perceptron_algo_train(epochs,eta,bias,df,classes,f1,f2): #returns final weights and test df
     print("in perceptron_algo")
     #prepare the dataframe to work on
     new_df = df[(df["bird category"] == classes[0]) | (df["bird category"] == classes[1])].copy()
-    new_df = new_df.iloc[:, [int(f1_index), int(f2_index), -1]].copy() #select two features
+    print(new_df.columns)
+    new_df = new_df[[str(f1), str(f2),"bird category"]] #select two features
+    print(new_df)
     #train test split
     class1_df = new_df[new_df["bird category"] ==  int(classes[0])]
     class2_df = new_df[new_df["bird category"] == int(classes[1])]
@@ -126,13 +128,13 @@ def perceptron_algo_train(epochs,eta,bias,df,classes,f1_index,f2_index): #return
         for index, entry in train_df.iterrows():
             pos = train_df.index.get_loc(index)
             # Calculate y_predict for the current entry
-            y_predict[pos] = (entry[int(f1_index)] * weights[0])+ (entry[int(f2_index)]* weights[1])+bias
+            y_predict[pos] = (entry[f1] * weights[0])+ (entry[f2]* weights[1])+bias
             y_predict_sign[pos] = np.sign(y_predict[pos])
             if y_predict_sign[pos] != entry.iloc[-1]:
                 loss= int(entry.iloc[-1]) - int(y_predict_sign[pos])
                 #form new weights
-                weights[0]=weights[0]+eta*loss*entry[int(f1_index)]
-                weights[1]=weights[1]+eta *loss*entry[int(f2_index)]
+                weights[0]=weights[0]+eta*loss*entry[f1]
+                weights[1]=weights[1]+eta *loss*entry[f2]
                 #print(f"loss  equals {loss}")
 
     print(f"final weights are: {weights[0]} and {weights[1]}")
