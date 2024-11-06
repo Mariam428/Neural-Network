@@ -80,8 +80,6 @@ def test_adaline(weights, bias, X_test, y_test, add_bias=True):
         actual_label = y_test[i]
         predicted_label = y_pred_binary[i]
         actual_label=int(actual_label)
-        print("predicted_label", predicted_label)
-        print("actual_label", actual_label)
 
         if predicted_label == 1:  # Predicted positive class
             if actual_label == 1:  # True positive
@@ -103,7 +101,7 @@ def test_adaline(weights, bias, X_test, y_test, add_bias=True):
 
     # Plot confusion matrix
     fig, ax = plt.subplots(figsize=(5, 5))
-    ax.matshow(cm, cmap='Blues', alpha=0.5)
+    ax.matshow(cm, cmap='Reds', alpha=0.5)
 
     # Define the labels based on position
     labels = [["TN", "FP"], ["FN", "TP"]]
@@ -159,7 +157,10 @@ def train_perceptron(eta, epochs,add_bias, f1, f2, class1, class2):
                 #form new weights
                 weights[0]=weights[0]+eta*loss*entry[f1]
                 weights[1]=weights[1]+eta *loss*entry[f2]
-
+                if add_bias:
+                    bias += eta * loss
+    if add_bias:
+        weights = np.insert(weights, 0, bias)
     X = train_df[[f1, f2]].values
     y = np.where(train_df["bird category"] == classes[0], -1, 1)  # Convert labels to -1 and 1
     plot_decision_boundary(weights, bias, X, y, add_bias,title="Perceptron Decision Boundary")
@@ -167,8 +168,12 @@ def train_perceptron(eta, epochs,add_bias, f1, f2, class1, class2):
 
 
 def test_perceptron(weights, bias, test_df, f1,f2,add_bias=True):
+
     X_test = test_df[[str(f1), str(f2)]].values
     y_test = test_df["bird category"].values
+
+    if add_bias:
+        X_test = np.insert(X_test, 0, 1, axis=1)  # Add bias column
 
     y_pred = np.dot(X_test, weights) + bias
 
@@ -179,8 +184,6 @@ def test_perceptron(weights, bias, test_df, f1,f2,add_bias=True):
     for i in range(len(y_test)):
         predicted_label = y_pred_binary[i]
         actual_label = y_test[i]
-        # print("predicted_label", predicted_label)
-        # print("actual_label", actual_label)
 
         if predicted_label == 1:  # Predicted positive class
             if actual_label == 1:  # True positive
@@ -200,7 +203,7 @@ def test_perceptron(weights, bias, test_df, f1,f2,add_bias=True):
 
     # Plot confusion matrix
     fig, ax = plt.subplots(figsize=(5, 5))
-    ax.matshow(cm, cmap='Blues', alpha=0.5)
+    ax.matshow(cm, cmap='Reds', alpha=0.5)
 
     # Define the labels based on position
     labels = [["TN", "FP"], ["FN", "TP"]]
@@ -225,12 +228,10 @@ def plot_decision_boundary(weights, bias, X, y, add_bias=False, title="Decision 
     plt.scatter(X[y == -1][:, 0], X[y == -1][:, 1], color='red', marker='o', label='Class -1')
     plt.scatter(X[y == 1][:, 0], X[y == 1][:, 1], color='blue', marker='x', label='Class 1')
 
-    # Plot the decision boundary
     x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
     y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
     xx = np.linspace(x_min, x_max, 100)
-    print(weights)
-    print(bias)
+
     if add_bias:
         intercept = -bias / weights[2]
         slope = -weights[1] / weights[2]
@@ -241,7 +242,6 @@ def plot_decision_boundary(weights, bias, X, y, add_bias=False, title="Decision 
     yy = slope * xx + intercept
     plt.plot(xx, yy, "k-", lw=2, label="Decision Boundary")
 
-    # Customize plot
     plt.xlabel("Feature 1")
     plt.ylabel("Feature 2")
     plt.title(title)
