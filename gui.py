@@ -1,8 +1,8 @@
 # gui.py
 import tkinter as tk
 from tkinter import ttk
-from tkinter import messagebox
-from main import train_adaline, call_perceptron_train  # Import functions from main.py
+from model import *
+
 
 def on_train_button_click():
     eta = float(eta_entry.get())
@@ -15,9 +15,31 @@ def on_train_button_click():
     class2 = classe2_var.get()
 
     if algorithm_var.get() == "Perceptron":
-        call_perceptron_train(eta, epochs, add_bias, feature1, feature2, class1, class2)
+      global weightsP,biasP,test_df
+      weightsP, biasP, test_df =train_perceptron(eta, epochs, add_bias, feature1, feature2, class1, class2)
+
+
     else:
-        train_adaline(eta, epochs, mse_threshold, add_bias, feature1, feature2, class1, class2)
+        global weightsA, biasA,X_test,y_test
+        weightsA, biasA,X_test,y_test = train_adaline(eta, epochs, mse_threshold, add_bias, feature1, feature2, class1, class2)
+        plot_decision_boundary(weightsA, biasA, X_test, y_test, add_bias, title="Adaline Decision Boundary")
+
+
+
+def on_test_button_click():
+    eta = float(eta_entry.get())
+    epochs = int(epochs_entry.get())
+    mse_threshold = float(mse_threshold_entry.get())
+    add_bias = bias_var.get()
+    feature1 = feature1_var.get()
+    feature2 = feature2_var.get()
+    class1 = classe1_var.get()
+    class2 = classe2_var.get()
+
+    if algorithm_var.get() == "Perceptron":
+        test_perceptron(weightsP,biasP,test_df,feature1,feature2,add_bias)
+    else:
+        test_adaline(weightsA,biasA,X_test,y_test,add_bias)
 
 # Main window
 root = tk.Tk()
@@ -81,5 +103,9 @@ algorithm_combobox.current(0)
 # Train button
 train_button = ttk.Button(root, text="Train", command=on_train_button_click)
 train_button.grid(row=9, column=1, pady=20)
+
+test_button = ttk.Button(root, text="Test", command=on_test_button_click)
+test_button.grid(row=9, column=2, pady=20)
+
 
 root.mainloop()
