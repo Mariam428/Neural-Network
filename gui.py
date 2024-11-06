@@ -24,8 +24,6 @@ def on_train_button_click():
         weightsA, biasA,X_test,y_test = train_adaline(eta, epochs, mse_threshold, add_bias, feature1, feature2, class1, class2)
         plot_decision_boundary(weightsA, biasA, X_test, y_test, add_bias, title="Adaline Decision Boundary")
 
-
-
 def on_test_button_click():
     eta = float(eta_entry.get())
     epochs = int(epochs_entry.get())
