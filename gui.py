@@ -111,11 +111,18 @@ def open_single_layer_window():
 
 
 def open_multi_layer_window():
-    # Close the main window
     main_window.destroy()
-    # Multi-layer Window Placeholder
+    # Multi-layer Window
+    def train_button_click():
+        eta = float(eta_multi.get())
+        epochs = int(epochs_multi.get())
+        add_bias = bias_multi.get()
+        layers_count=layers_entry.get()
+        activation_fun=activation_var.get()
+        train_df = training_phase(layers_count,neuron_counts,eta,epochs,add_bias,activation_fun)
+
     multi_layer_window = tk.Tk()
-    multi_layer_window.title("Multi-layer - Machine Learning GUI")
+    multi_layer_window.title("Multi-layer")
     multi_layer_window.geometry("500x350")
 
     ttk.Label(multi_layer_window, text="Number of hidden layers:").grid(row=0, column=0, padx=5, pady=5, sticky="e")
@@ -123,27 +130,32 @@ def open_multi_layer_window():
     layers_entry.insert(0, "1")
     layers_entry.grid(row=0, column=1, padx=10, pady=5)
 
-    ttk.Label(multi_layer_window, text="Number of neurons in each layer:").grid(row=1, column=0, padx=5, pady=5, sticky="e")
-    layers_entry = ttk.Entry(multi_layer_window)
-    layers_entry.insert(0, "1")
-    layers_entry.grid(row=1, column=1, padx=10, pady=5)
+    # Label for the entry field
+    ttk.Label(multi_layer_window, text="Number of neurons in each layer:").grid(row=1, column=0, padx=5, pady=5,
+                                                                                sticky="e")
+
+    # Entry widget for neuron counts
+    neurons_entry = ttk.Entry(multi_layer_window)
+    neurons_entry.insert(0, "1")
+    neurons_entry.grid(row=1, column=1, padx=10, pady=5)
+    neuron_counts = [int(num.strip()) for num in neurons_entry.get().split(',')]
 
     # Learning rate
     ttk.Label(multi_layer_window, text="Learning Rate (eta):").grid(row=4, column=0, padx=5, pady=5, sticky="e")
-    eta_entry = ttk.Entry(multi_layer_window)
-    eta_entry.insert(0, "0.001")
-    eta_entry.grid(row=4, column=1, padx=10, pady=5)
+    eta_multi = ttk.Entry(multi_layer_window)
+    eta_multi.insert(0, "0.001")
+    eta_multi.grid(row=4, column=1, padx=10, pady=5)
 
     # Number of epochs
     ttk.Label(multi_layer_window, text="Number of Epochs (m):").grid(row=5, column=0, padx=5, pady=5, sticky="e")
-    epochs_entry = ttk.Entry(multi_layer_window)
-    epochs_entry.insert(0, "10")
-    epochs_entry.grid(row=5, column=1, padx=10, pady=5)
+    epochs_multi = ttk.Entry(multi_layer_window)
+    epochs_multi.insert(0, "10")
+    epochs_multi.grid(row=5, column=1, padx=10, pady=5)
 
     # Bias checkbox
-    bias_var = tk.BooleanVar()
-    bias_checkbox = ttk.Checkbutton(multi_layer_window, text="Add Bias", variable=bias_var)
-    bias_checkbox.grid(row=7, column=1, padx=5, pady=5, sticky="w")
+    bias_multi = tk.BooleanVar()
+    bias_multi = ttk.Checkbutton(multi_layer_window, text="Add Bias", variable=bias_multi)
+    bias_multi.grid(row=7, column=1, padx=5, pady=5, sticky="w")
 
     # Activation function selection
     activation_var = tk.StringVar()
@@ -151,6 +163,13 @@ def open_multi_layer_window():
     activation_combobox['values'] = ["Sigmoid", "Hyperbolic Tangent sigmoid"]
     activation_combobox.grid(row=8, column=1, padx=10, pady=5)
     activation_combobox.current(0)
+
+    train_button = ttk.Button(multi_layer_window, text="Train",command=train_button_click)
+    train_button.grid(row=9, column=1, pady=20)
+
+    test_button = ttk.Button(multi_layer_window, text="Test") #command=on_test_button_click)
+    test_button.grid(row=10, column=1, padx=10)
+
 
     multi_layer_window.mainloop()
 
