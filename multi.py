@@ -27,6 +27,8 @@ def training_phase(hidden_layers, neurons, eta, epochs, add_bias, activation):
     # initializing weights
     weights = []
 
+
+
     first_array = np.random.randn(5, neurons[0])
     weights.append(first_array)
     for i in range(0, len(neurons)):
@@ -41,6 +43,8 @@ def training_phase(hidden_layers, neurons, eta, epochs, add_bias, activation):
     train_df = df.groupby("bird category").apply(lambda x: x.sample(n=30, random_state=42))
     train_df = train_df.reset_index(drop=True)
     test_df = df[~df.index.isin(train_df.index)]
+
+
 
     # start training
     for m in range(epochs):
@@ -75,6 +79,7 @@ def training_phase(hidden_layers, neurons, eta, epochs, add_bias, activation):
                 elif activation == "Hyperbolic Tangent sigmoid":
                     n = np.tanh(n)
                 output.append(n)
+
 
 
     return test_df

@@ -113,13 +113,7 @@ def open_single_layer_window():
 def open_multi_layer_window():
     main_window.destroy()
     # Multi-layer Window
-    def train_button_click():
-        eta = float(eta_multi.get())
-        epochs = int(epochs_multi.get())
-        add_bias = bias_multi.get()
-        layers_count=layers_entry.get()
-        activation_fun=activation_var.get()
-        train_df = training_phase(layers_count,neuron_counts,eta,epochs,add_bias,activation_fun)
+
 
     multi_layer_window = tk.Tk()
     multi_layer_window.title("Multi-layer")
@@ -138,7 +132,7 @@ def open_multi_layer_window():
     neurons_entry = ttk.Entry(multi_layer_window)
     neurons_entry.insert(0, "1")
     neurons_entry.grid(row=1, column=1, padx=10, pady=5)
-    neuron_counts = [int(num.strip()) for num in neurons_entry.get().split(',')]
+
 
     # Learning rate
     ttk.Label(multi_layer_window, text="Learning Rate (eta):").grid(row=4, column=0, padx=5, pady=5, sticky="e")
@@ -154,8 +148,8 @@ def open_multi_layer_window():
 
     # Bias checkbox
     bias_multi = tk.BooleanVar()
-    bias_multi = ttk.Checkbutton(multi_layer_window, text="Add Bias", variable=bias_multi)
-    bias_multi.grid(row=7, column=1, padx=5, pady=5, sticky="w")
+    bias_multi_var = ttk.Checkbutton(multi_layer_window, text="Add Bias", variable=bias_multi)
+    bias_multi_var.grid(row=7, column=1, padx=5, pady=5, sticky="w")
 
     # Activation function selection
     activation_var = tk.StringVar()
@@ -163,6 +157,14 @@ def open_multi_layer_window():
     activation_combobox['values'] = ["Sigmoid", "Hyperbolic Tangent sigmoid"]
     activation_combobox.grid(row=8, column=1, padx=10, pady=5)
     activation_combobox.current(0)
+    def train_button_click():
+        eta = float(eta_multi.get())
+        epochs = int(epochs_multi.get())
+        add_bias = bias_multi.get()
+        layers_count=int(layers_entry.get())
+        activation_fun=activation_var.get()
+        neuron_counts = [int(num.strip()) for num in neurons_entry.get().split(',')]
+        train_df = training_phase(layers_count,neuron_counts,eta,epochs,add_bias,activation_fun)
 
     train_button = ttk.Button(multi_layer_window, text="Train",command=train_button_click)
     train_button.grid(row=9, column=1, pady=20)
