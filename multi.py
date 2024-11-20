@@ -1,9 +1,6 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-from tkinter import messagebox
-from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
 
 df = pd.read_csv('birds.csv')
 
@@ -23,63 +20,113 @@ scaler = StandardScaler()
 df[['body_mass', 'beak_length', 'beak_depth', 'fin_length']] = scaler.fit_transform(
     df[['body_mass', 'beak_length', 'beak_depth', 'fin_length']])
 
+
 def training_phase(hidden_layers, neurons, eta, epochs, add_bias, activation):
-    # initializing weights
+
+    num_of_input = 5
     weights = []
 
+    if add_bias:
+        num_of_input += 1
 
-
-    first_array = np.random.randn(5, neurons[0])
+    #Input Layer ----->First Hidden Layer
+    first_array = np.random.randn(num_of_input, neurons[0])
     weights.append(first_array)
-    for i in range(0, len(neurons)):
-        if i == len(neurons)-1:
-            array = np.random.randn(neurons[i], 3)
+
+    #Hidden Layer expect the LAST ONE
+    for i in range(0, len(neurons) - 1):
+        if add_bias:
+            array = np.random.randn(neurons[i] + 1, neurons[i + 1])
         else:
             array = np.random.randn(neurons[i], neurons[i + 1])
-
         weights.append(array)
+
+    #Last Hidden Layer ----> Output Layer
+    if add_bias:
+        output_array = np.random.randn(neurons[-1] + 1, 3)
+    else:
+        output_array = np.random.randn(neurons[-1], 3)
+    weights.append(output_array)
 
     # splitting the data for train and test
     train_df = df.groupby("bird category").apply(lambda x: x.sample(n=30, random_state=42))
     train_df = train_df.reset_index(drop=True)
     test_df = df[~df.index.isin(train_df.index)]
 
+    # data = {
+    #     'Col1': [3],
+    #     'Col2': [1],
+    #     'Col3': [2],
+    #     'Col4': [1],
+    #     'Col5': [2]
+    # }
+    # train_df = pd.DataFrame(data)
 
+    # print("Weights between input and hidden layer:")
+    # print(weights[0])
+    # for i in range(1, len(weights) - 1):
+    #     print(f"Weights between hidden layer {i} and hidden layer {i + 1}:")
+    #     print(weights[i])
+    # print("Weights between hidden and output layer:")
+    # print(weights[-1])
 
-    # start training
     for m in range(epochs):
         for index, row in train_df.iterrows():
-            x = train_df.iloc[index, 0:5].values.tolist()
-            z = train_df.iloc[index, 5]
+            # input
+            x = train_df.iloc[index, 0:num_of_input].values.tolist()
+            # target
+            z = train_df.iloc[index, -1]
+            # hidden layers
             y_hidden = []
-            for i in range(0, hidden_layers):
+            for i in range(hidden_layers):
                 arr = []
-                for j in range(0, neurons[i]):
+                for j in range(neurons[i]):
+                    #Input * Weights
                     if i == 0:
-                        n = np.dot(weights[i][:, j], x)
+                        if add_bias:
+                            #adding the bias(ONE) to the input (x)
+                            n = np.dot(np.append(x, 1), weights[i][:, j])
+                        else:
+                            n = np.dot(x, weights[i][:, j])
                         if activation == "Sigmoid":
                             n = 1 / (1 + np.exp(-n))
                         elif activation == "Hyperbolic Tangent sigmoid":
                             n = np.tanh(n)
                         arr.append(n)
                     else:
-                        n = np.dot(weights[i][:, j], y_hidden[i - 1])
+                        # Hidden Layers * Weights
+                        if add_bias:
+                            #adding the bias (ONE) to the hidden Layer
+                            n = np.dot(np.append(y_hidden[i - 1], 1), weights[i][:, j])
+                        else:
+                            n = np.dot(y_hidden[i - 1], weights[i][:, j])
                         if activation == "Sigmoid":
                             n = 1 / (1 + np.exp(-n))
                         elif activation == "Hyperbolic Tangent sigmoid":
                             n = np.tanh(n)
                         arr.append(n)
                 y_hidden.append(arr)
+
             output = []
-            for j in range(0, 3):
-                l=len(weights)-1
-                n = np.dot(weights[l][:, j], y_hidden[l - 1])
+            for j in range(3):
+                l = len(weights) - 1
+                if add_bias:
+                    # adding the bias (ONE) to the output Layer
+                    n = np.dot(np.append(y_hidden[l - 1], 1), weights[l][:, j])
+                else:
+                    n = np.dot(y_hidden[l - 1], weights[l][:, j])
+
                 if activation == "Sigmoid":
                     n = 1 / (1 + np.exp(-n))
                 elif activation == "Hyperbolic Tangent sigmoid":
                     n = np.tanh(n)
                 output.append(n)
 
-
-
+    # print("**********************************************************************************")
+    # # print(train_df)
+    # print("hidden")
+    # print(y_hidden)
+    # print("f")
+    # print(output)
     return test_df
+# training_phase(1,[2],0.001,1,True,'Hyperbolic Tangent sigmoid')
