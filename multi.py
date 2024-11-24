@@ -73,7 +73,7 @@ def training_phase(hidden_layers, neurons, eta, epochs, add_bias, activation):
     for m in range(epochs):
         for index, row in train_df.iterrows():
             # input
-            x = train_df.iloc[index, 0:num_of_input].values.tolist()
+            x = train_df.iloc[index, 0:5].values.tolist()
             # target
             z = train_df.iloc[index, -1]
             # hidden layers
@@ -121,6 +121,54 @@ def training_phase(hidden_layers, neurons, eta, epochs, add_bias, activation):
                 elif activation == "Hyperbolic Tangent sigmoid":
                     n = np.tanh(n)
                 output.append(n)
+                # Backward step
+                z = np.zeros(3)
+                z[train_df.iloc[index, -1]] = 1
+
+                # output layer error
+                sk = []
+                for j in range(3):
+                    s = 0
+                    if activation == "Sigmoid":
+                        s = (z[j] - output[j]) * output[j] * (1 - output[j])
+                    elif activation == "Hyperbolic Tangent sigmoid":
+                        s = (z[j] - output[j])*(1 - (output[j]*output[j]))
+                    sk.append(s)
+                # hidden layer error
+                sh = [None] * hidden_layers
+                for i in range(hidden_layers - 1, -1, -1):
+                    s = np.zeros(neurons[i])
+                    for j in range(neurons[i]):
+                        if i == hidden_layers - 1:
+                            for k, error in enumerate(sk):
+                                s[j] += error * weights[i + 1][j, k]
+                        else:
+                            for k, error in enumerate(sh[i + 1]):
+                                s[j] += error * weights[i + 1][j, k]
+                        if activation == "Sigmoid":
+                            s[j] *= y_hidden[i][j] * (1 - y_hidden[i][j])
+                        elif activation == "Hyperbolic Tangent sigmoid":
+                            s[j] *= (1 - (y_hidden[i][j] * y_hidden[i][j]))
+                    sh[i] = s
+            # updating weights
+            # output layer
+            l = len(weights) - 1
+            for j in range(3):
+                for i in range(len(weights[l]) - 1):
+                    weights[l][i, j] += eta * sk[j] * y_hidden[-1][i]
+                if add_bias:
+                    weights[l][-1, j] += eta * sk[j]
+
+            # the hidden layers
+            for i in range(hidden_layers - 1, -1, -1):
+                for j in range(neurons[i]):
+                    for k in range(len(weights[i]) - 1):
+                        if i == 0:
+                            weights[i][k, j] += eta * sh[i][j] * x[k]
+                        else:
+                            weights[i][k, j] += eta * sh[i][j] * y_hidden[i - 1][k]
+                    if add_bias:
+                        weights[i][-1, j] += eta * sh[i][j]
 
     # print("**********************************************************************************")
     # # print(train_df)
