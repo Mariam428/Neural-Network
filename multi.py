@@ -121,37 +121,40 @@ def training_phase(hidden_layers, neurons, eta, epochs, add_bias, activation):
                 elif activation == "Hyperbolic Tangent sigmoid":
                     n = np.tanh(n)
                 output.append(n)
-                # Backward step
-                z = np.zeros(3)
-                z[train_df.iloc[index, -1]] = 1
+            # Backward step
+            z = np.zeros(3)
+            z[train_df.iloc[index, -1]] = 1
+            # output layer error
+            sk =[]
+            z = np.array(z)
+            for j in range(3):
+                error = z[j] - output[j]
+                if activation == "Sigmoid":
+                    derivative = output[j] * (1 - output[j])
+                elif activation == "Hyperbolic Tangent sigmoid":
+                    derivative = 1 - (output[j] ** 2)
+                sk.append(error * derivative)
 
-                # output layer error
-                sk = []
-                for j in range(3):
-                    s = 0
+            # hidden layer error
+            sh = []
+            for i in range(hidden_layers - 1, -1, -1):
+                s = np.zeros(neurons[i])
+                for j in range(neurons[i]):  # For each neuron in the current layer
+                    if i == hidden_layers - 1:  # If it's the last hidden layer
+                        for k, error in enumerate(sk):  # Use output layer errors
+                            s[j] += error * weights[i + 1][j, k]
+                    else:  # For other hidden layers
+                        for k, error in enumerate(sh[hidden_layers - i - 2]):
+                            s[j] += error * weights[i + 1][j, k]
                     if activation == "Sigmoid":
-                        s = (z[j] - output[j]) * output[j] * (1 - output[j])
+                         s[j] *= y_hidden[i][j] * (1 - y_hidden[i][j])
                     elif activation == "Hyperbolic Tangent sigmoid":
-                        s = (z[j] - output[j])*(1 - (output[j]*output[j]))
-                    sk.append(s)
-                # hidden layer error
-                sh = [None] * hidden_layers
-                for i in range(hidden_layers - 1, -1, -1):
-                    s = np.zeros(neurons[i])
-                    for j in range(neurons[i]):
-                        if i == hidden_layers - 1:
-                            for k, error in enumerate(sk):
-                                s[j] += error * weights[i + 1][j, k]
-                        else:
-                            for k, error in enumerate(sh[i + 1]):
-                                s[j] += error * weights[i + 1][j, k]
-                        if activation == "Sigmoid":
-                            s[j] *= y_hidden[i][j] * (1 - y_hidden[i][j])
-                        elif activation == "Hyperbolic Tangent sigmoid":
-                            s[j] *= (1 - (y_hidden[i][j] * y_hidden[i][j]))
-                    sh[i] = s
-            # updating weights
-            # output layer
+                        s[j] *= (1 - (y_hidden[i][j] ** 2))
+
+                sh.append(s)
+                sh = sh[::-1]
+                # updating weights
+                # output layer
             l = len(weights) - 1
             for j in range(3):
                 for i in range(len(weights[l]) - 1):
@@ -176,5 +179,8 @@ def training_phase(hidden_layers, neurons, eta, epochs, add_bias, activation):
     # print(y_hidden)
     # print("f")
     # print(output)
+    #print(sk)
+    print(sh)
+    #print(weights)
     return test_df
 # training_phase(1,[2],0.001,1,True,'Hyperbolic Tangent sigmoid')
