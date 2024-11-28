@@ -6,7 +6,7 @@ df = pd.read_csv('birds.csv')
 
 # Data preprocessing
 mode_gender = df['gender'][df['gender'] != 'NA'].mode()[0]
-df['gender'] = df['gender'].replace('NA', mode_gender)
+df['gender'] = df['gender'].fillna(mode_gender)
 
 # Change categorical values to numerical
 gender_mapping = {'male': 0, 'female': 1}
@@ -30,22 +30,22 @@ def training_phase(hidden_layers, neurons, eta, epochs, add_bias, activation):
         num_of_input += 1
 
     #Input Layer ----->First Hidden Layer
-    first_array = np.random.randn(num_of_input, neurons[0])
+    first_array = np.random.uniform(-1,1,size=(num_of_input, neurons[0]))
     weights.append(first_array)
 
     #Hidden Layer expect the LAST ONE
     for i in range(0, len(neurons) - 1):
         if add_bias:
-            array = np.random.randn(neurons[i] + 1, neurons[i + 1])
+            array = np.random.uniform(-1,1,size=(neurons[i] + 1, neurons[i + 1]))
         else:
-            array = np.random.randn(neurons[i], neurons[i + 1])
+            array = np.random.uniform(-1,1,size=(neurons[i], neurons[i + 1]))
         weights.append(array)
 
     #Last Hidden Layer ----> Output Layer
     if add_bias:
-        output_array = np.random.randn(neurons[-1] + 1, 3)
+        output_array = np.random.uniform(-1,1,size=(neurons[-1] + 1, 3))
     else:
-        output_array = np.random.randn(neurons[-1], 3)
+        output_array = np.random.uniform(-1,1,size=(neurons[-1] , 3))
     weights.append(output_array)
 
     # splitting the data for train and test
@@ -58,17 +58,18 @@ def training_phase(hidden_layers, neurons, eta, epochs, add_bias, activation):
     #     'Col2': [1],
     #     'Col3': [2],
     #     'Col4': [1],
-    #     'Col5': [2]
+    #     'Col5': [2],
+    #     'Col6': [2]
     # }
     # train_df = pd.DataFrame(data)
 
-    # print("Weights between input and hidden layer:")
-    # print(weights[0])
-    # for i in range(1, len(weights) - 1):
-    #     print(f"Weights between hidden layer {i} and hidden layer {i + 1}:")
-    #     print(weights[i])
-    # print("Weights between hidden and output layer:")
-    # print(weights[-1])
+    print("Weights between input and hidden layer:")
+    print(weights[0])
+    for i in range(1, len(weights) - 1):
+        print(f"Weights between hidden layer {i} and hidden layer {i + 1}:")
+        print(weights[i])
+    print("Weights between hidden and output layer:")
+    print(weights[-1])
 
     for m in range(epochs):
         for index, row in train_df.iterrows():
@@ -105,8 +106,9 @@ def training_phase(hidden_layers, neurons, eta, epochs, add_bias, activation):
                         elif activation == "Hyperbolic Tangent sigmoid":
                             n = np.tanh(n)
                         arr.append(n)
+                        # print(arr)
                 y_hidden.append(arr)
-
+            print(y_hidden)
             output = []
             for j in range(3):
                 l = len(weights) - 1
@@ -121,6 +123,8 @@ def training_phase(hidden_layers, neurons, eta, epochs, add_bias, activation):
                 elif activation == "Hyperbolic Tangent sigmoid":
                     n = np.tanh(n)
                 output.append(n)
+            # print("output : ",output)
+
             # Backward step
             z = np.zeros(3)
             z[train_df.iloc[index, -1]] = 1
@@ -134,6 +138,7 @@ def training_phase(hidden_layers, neurons, eta, epochs, add_bias, activation):
                 elif activation == "Hyperbolic Tangent sigmoid":
                     derivative = 1 - (output[j] ** 2)
                 sk.append(error * derivative)
+            # print("output error :" , sk)
 
             # hidden layer error
             sh = []
@@ -153,6 +158,7 @@ def training_phase(hidden_layers, neurons, eta, epochs, add_bias, activation):
 
                 sh.append(s)
                 sh = sh[::-1]
+            # print("hidden error :", sh)
                 # updating weights
                 # output layer
             l = len(weights) - 1
@@ -173,14 +179,21 @@ def training_phase(hidden_layers, neurons, eta, epochs, add_bias, activation):
                     if add_bias:
                         weights[i][-1, j] += eta * sh[i][j]
 
-    # print("**********************************************************************************")
+    print("**********************************************************************************")
     # # print(train_df)
     # print("hidden")
     # print(y_hidden)
     # print("f")
     # print(output)
     #print(sk)
-    print(sh)
-    #print(weights)
+    # print(sh)
+    # print("weights after updatingggg")
+    # print("Weights between input and hidden layer:")
+    # print(weights[0])
+    # for i in range(1, len(weights) - 1):
+    #     print(f"Weights between hidden layer {i} and hidden layer {i + 1}:")
+    #     print(weights[i])
+    # print("Weights between hidden and output layer:")
+    # print(weights[-1])
     return test_df
-# training_phase(1,[2],0.001,1,True,'Hyperbolic Tangent sigmoid')
+# training_phase(3,[2,2,2],0.01,1,True,'Hyperbolic Tangent sigmoid')
