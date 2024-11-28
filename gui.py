@@ -166,10 +166,20 @@ def open_multi_layer_window():
         neuron_counts = [int(num.strip()) for num in neurons_entry.get().split(',')]
         train_df = training_phase(layers_count,neuron_counts,eta,epochs,add_bias,activation_fun)
 
-    train_button = ttk.Button(multi_layer_window, text="Train",command=train_button_click)
+    def test_button_click():
+        eta = float(eta_multi.get())
+        epochs = int(epochs_multi.get())
+        add_bias = bias_multi.get()
+        layers_count = int(layers_entry.get())
+        activation_fun = activation_var.get()
+        neuron_counts = [int(num.strip()) for num in neurons_entry.get().split(',')]
+        test_df = testing_phase(layers_count, neuron_counts,eta,epochs,add_bias,activation_fun)
+
+
+    train_button = ttk.Button(multi_layer_window, text = "Train", command = train_button_click)
     train_button.grid(row=9, column=1, pady=20)
 
-    test_button = ttk.Button(multi_layer_window, text="Test") #command=on_test_button_click)
+    test_button = ttk.Button(multi_layer_window, text = "Test", command = test_button_click)
     test_button.grid(row=10, column=1, padx=10)
 
 
